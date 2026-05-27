@@ -11,10 +11,11 @@ from app.cmd import (
 
 LIBXRAY_MOD_NAME = "github.com/xtls/libxray"
 XRAY_CORE_MOD_NAME = "github.com/xtls/xray-core"
-DEFAULT_XRAY_CORE_TAG = "v26.5.9"
-# Xray-core CalVer tags cannot be used directly as Go module versions because
-# its module path does not include /v26. This pseudo-version points to the tag above.
-DEFAULT_XRAY_CORE_VERSION = "v1.260327.1-0.20260509173629-1bdb488c9ec0"
+FEDARISHA_XRAY_CORE_MOD_NAME = "github.com/Fedarisha/Xray-core-fedarisha"
+FEDARISHA_XRAY_CORE_VERSION = "v1.260524.0"
+# Xray-core's module path remains github.com/xtls/xray-core, so keep the
+# require version on that path and replace the source with Fedarisha's fork.
+DEFAULT_XRAY_CORE_REQUIRE_VERSION = "v1.260327.1-0.20260509173629-1bdb488c9ec0"
 LOCAL_XRAY_CORE_DIR_NAME = "Xray-core"
 
 
@@ -64,13 +65,22 @@ class Builder(object):
                 raise Exception("go mod edit replace failed")
         else:
             ret = subprocess.run(
-                ["go", "mod", "edit", f"-dropreplace={XRAY_CORE_MOD_NAME}"]
+                [
+                    "go",
+                    "mod",
+                    "edit",
+                    f"-replace={XRAY_CORE_MOD_NAME}={FEDARISHA_XRAY_CORE_MOD_NAME}@{FEDARISHA_XRAY_CORE_VERSION}",
+                ]
             )
             if ret.returncode != 0:
-                raise Exception("go mod edit dropreplace failed")
+                raise Exception("go mod edit replace failed")
 
             ret = subprocess.run(
-                ["go", "get", f"{XRAY_CORE_MOD_NAME}@{DEFAULT_XRAY_CORE_VERSION}"]
+                [
+                    "go",
+                    "get",
+                    f"{XRAY_CORE_MOD_NAME}@{DEFAULT_XRAY_CORE_REQUIRE_VERSION}",
+                ]
             )
             if ret.returncode != 0:
                 raise Exception("go get xray-core failed")
@@ -192,13 +202,18 @@ class Builder(object):
     def revert_go_env(self):
         os.chdir(self.lib_dir)
         ret = subprocess.run(
-            ["go", "mod", "edit", f"-dropreplace={XRAY_CORE_MOD_NAME}"]
+            [
+                "go",
+                "mod",
+                "edit",
+                f"-replace={XRAY_CORE_MOD_NAME}={FEDARISHA_XRAY_CORE_MOD_NAME}@{FEDARISHA_XRAY_CORE_VERSION}",
+            ]
         )
         if ret.returncode != 0:
-            raise Exception("go mod edit dropreplace failed")
+            raise Exception("go mod edit replace failed")
 
         ret = subprocess.run(
-            ["go", "get", f"{XRAY_CORE_MOD_NAME}@{DEFAULT_XRAY_CORE_VERSION}"]
+            ["go", "get", f"{XRAY_CORE_MOD_NAME}@{DEFAULT_XRAY_CORE_REQUIRE_VERSION}"]
         )
         if ret.returncode != 0:
             raise Exception("go get xray-core failed")
