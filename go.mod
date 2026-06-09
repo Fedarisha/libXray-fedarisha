@@ -65,4 +65,4 @@ require (
 	lukechampine.com/blake3 v1.4.1 // indirect
 )
 
-replace github.com/xtls/xray-core => github.com/Fedarisha/Xray-core-fedarisha v1.260524.0
+replace github.com/xtls/xray-core => github.com/Fedarisha/Xray-core-fedarisha v1.260608.0
